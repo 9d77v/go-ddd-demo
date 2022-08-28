@@ -1,0 +1,12 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Query {
+  userPage(page:Int!,size:Int!):UserConnection!
+  userInfo(id:ID!):User!
+} 
+
+type Mutation {
+  createUser(input:NewUser!):User!
+}

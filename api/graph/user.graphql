@@ -1,0 +1,20 @@
+type User {
+	id: ID!
+	nickname:String!
+	phone:String!
+	gender: Int!
+	createdAt: String!
+	updatedAt: String!
+}
+
+type UserConnection {
+	totalCount: Int!
+	edges:[User!]!
+}
+
+input NewUser {
+	phone: String!
+	nickname:String!
+	password:String!
+	gender: Int!
+}

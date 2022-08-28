@@ -1,0 +1,4 @@
+autowire:
+  grpc:
+    user-service:
+      address: localhost:7200

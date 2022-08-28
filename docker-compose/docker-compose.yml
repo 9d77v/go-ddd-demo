@@ -1,0 +1,24 @@
+version: '3'
+services:
+  nacos:
+    image: nacos/nacos-server:2.0.3-slim
+    restart: always
+    container_name: nacos-standalone
+    environment:
+      - PREFER_HOST_MODE=hostname
+      - MODE=standalone
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+  postgres:
+    image: postgres:14.5-alpine3.16
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+    container_name: postgres

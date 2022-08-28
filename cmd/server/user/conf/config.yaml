@@ -1,0 +1,14 @@
+autowire:
+  normal:
+    github.com/9d77v/go-ddd-demo/pkg/db/postgres.PgDB:
+      pg_local:
+        param:
+          host: 127.0.0.1
+          port: 5432
+          user: "postgres"
+          password: 123456
+          dbname: go-ddd-demo 
+          table_prefix: ddd_
+          max_idle_conns: 10
+          max_open_conns: 30
+          debug: true
