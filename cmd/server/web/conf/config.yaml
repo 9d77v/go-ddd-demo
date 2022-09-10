@@ -1,4 +1,4 @@
 autowire:
   grpc:
     user-service:
-      address: localhost:7200
+      address: etcd://127.0.0.1:2379/go-ddd-demo/services/user-service

@@ -48,8 +48,8 @@ func (a *App) Run() {
 	srv := grpc.NewServer()
 	pb.RegisterUserServiceServer(srv, a.UserService)
 	pb.RegisterUserQueryServiceServer(srv, a.UserQueryService)
+	a.Register()
 	go func() {
-		a.Register()
 		errc <- srv.Serve(lis)
 		log.Printf("connect to http://localhost:%d/ for GraphQL playground", a.ServerPort)
 	}()

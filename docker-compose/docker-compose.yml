@@ -22,3 +22,26 @@ services:
     volumes:
       - ./postgres/data:/var/lib/postgresql/data
     container_name: postgres
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.4
+    restart: always
+    command: >
+      /usr/local/bin/etcd 
+      --data-dir=/etcd-data --name etcd1 
+      --initial-advertise-peer-urls http://0.0.0.0:2380 --listen-peer-urls http://0.0.0.0:2380 
+      --advertise-client-urls http://0.0.0.0:2379 --listen-client-urls http://0.0.0.0:2379 
+      --initial-cluster etcd1=http://0.0.0.0:2380
+    ports:
+      - 2379:2379
+      - 2380:2380
+    volumes:
+      - ./etcd/data:/etcd-data
+    container_name: etcd
+  redis:
+    image: redis:7.0.4
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+       - ./redis/data:/data
+    container_name: redis

@@ -10,11 +10,9 @@ import (
 	"github.com/alibaba/ioc-golang/config"
 )
 
-var namespaceId = env.String("NamespaceId", "pdc-dev")
-var nacosAddr = env.String("NacosAddr", "127.0.0.1")
-var nacosPort = env.Int("NacosPort", 8848)
 var serviceName = env.String("ServiceName", "web-service")
 var serverPort = env.Int("ServerPort", 7100)
+var etcdAddress = env.String("ETCD_ADDRESS", "http://localhost:2379")
 
 func main() {
 	var configPath = flag.String("conf", "conf", "请输入配置文件地址")
@@ -25,11 +23,9 @@ func main() {
 	}
 	app, err := web.GetAppSingleton(&web.Param{
 		BaseParam: base.BaseParam{
-			NamespaceId: namespaceId,
-			NacosAddr:   nacosAddr,
-			NacosPort:   nacosPort,
 			ServiceName: serviceName,
 			ServerPort:  uint64(serverPort),
+			EtcdAddress: etcdAddress,
 		},
 	})
 	if err != nil {

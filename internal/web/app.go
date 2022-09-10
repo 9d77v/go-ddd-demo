@@ -47,11 +47,9 @@ func (a *App) Run() {
 		Handler: a.getServerMux(),
 	}
 	go func() {
-		a.Register()
 		errc <- srv.ListenAndServe()
 		log.Printf("connect to http://localhost:%d/ for GraphQL playground", a.ServerPort)
 	}()
-
 	log.Printf("exiting (%v)", <-errc)
 	srvCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -59,7 +57,6 @@ func (a *App) Run() {
 	if err != nil {
 		log.Println("server shut down error:", err)
 	}
-	a.Deregister()
 	log.Println("exited")
 }
 

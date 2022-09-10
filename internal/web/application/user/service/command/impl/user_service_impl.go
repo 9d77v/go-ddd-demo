@@ -8,8 +8,8 @@ import (
 	"github.com/9d77v/go-ddd-demo/internal/web/application/user/assembler"
 	"github.com/9d77v/go-ddd-demo/internal/web/application/user/service/command"
 	"github.com/9d77v/go-ddd-demo/internal/web/model"
+	"github.com/9d77v/go-ddd-demo/pkg/grpc"
 	autowire "github.com/alibaba/ioc-golang/autowire"
-	"github.com/alibaba/ioc-golang/extension/autowire/grpc"
 	googleGRPC "google.golang.org/grpc"
 )
 

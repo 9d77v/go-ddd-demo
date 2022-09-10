@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/alibaba/ioc-golang/extension/autowire/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -64,7 +63,7 @@ func (c *Param) createDatabase(db *gorm.DB) {
 	if err != nil {
 		log.Println("create db failed:", err)
 	} else {
-		log.Printf("create db '%s' succeed\n", config.Name)
+		log.Printf("create db '%s' succeed\n", c.Dbname)
 	}
 }
 

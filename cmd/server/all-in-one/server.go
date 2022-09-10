@@ -21,10 +21,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// userRepo, err := repository.GetUserRepositorySingleton()
-	// err = userRepo.GetDB().AutoMigrate(&entity.User{})
-	// if err != nil {
-	// 	panic(err)
-	// }
 	app.Run()
 }

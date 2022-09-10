@@ -22,15 +22,17 @@ import (
 
 	"github.com/9d77v/go-ddd-demo/internal/user"
 	"github.com/9d77v/go-ddd-demo/pkg/base"
+	"github.com/9d77v/go-ddd-demo/pkg/util"
 	"github.com/9d77v/go-pkg/env"
 	"github.com/alibaba/ioc-golang"
 )
 
-var namespaceId = env.String("NamespaceId", "pdc-dev")
-var nacosAddr = env.String("NacosAddr", "127.0.0.1")
-var nacosPort = env.Int("NacosPort", 8848)
-var serviceName = env.String("ServiceName", "user-service")
-var serverPort = env.Int("ServerPort", 7200)
+const (
+	appName     = "go-ddd-demo"
+	serviceName = "user-service"
+)
+
+var etcdAddress = env.String("ETCD_ADDRESS", "http://localhost:2379")
 
 func main() {
 	var configPath = flag.String("conf", "conf", "请输入配置文件地址")
@@ -41,11 +43,11 @@ func main() {
 	}
 	app, err := user.GetAppSingleton(&user.Param{
 		BaseParam: base.BaseParam{
-			NamespaceId: namespaceId,
-			NacosAddr:   nacosAddr,
-			NacosPort:   nacosPort,
+			AppName:     appName,
 			ServiceName: serviceName,
-			ServerPort:  uint64(serverPort),
+			ServerHost:  util.GetNetworkIp(),
+			ServerPort:  util.GetRandomPort(),
+			EtcdAddress: etcdAddress,
 		},
 	})
 	if err != nil {

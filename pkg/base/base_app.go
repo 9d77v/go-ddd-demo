@@ -1,74 +1,77 @@
 package base
 
 import (
-	"github.com/9d77v/go-ddd-demo/pkg/util"
-	config "github.com/alibaba/ioc-golang/extension/config_center/nacos"
-	"github.com/alibaba/ioc-golang/extension/registry/nacos"
-	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
-	"github.com/nacos-group/nacos-sdk-go/v2/vo"
+	"context"
+	"fmt"
+	"log"
+	"strings"
+
+	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/client/v3/naming/endpoints"
 )
 
+const _ttl = 10
+
 type BaseApp struct {
-	NacosClient  nacos.NamingClientIOCInterface
-	ConfigClient config.ConfigClientIOCInterface
-	ServiceName  string
-	ServerPort   uint64
+	AppName     string
+	ServiceName string
+	ServerHost  string
+	ServerPort  uint64
+	EtcdClient  *clientv3.Client
 }
 
 type BaseParam struct {
-	NamespaceId string
-	NacosAddr   string
-	NacosPort   int
+	AppName     string
 	ServiceName string
+	ServerHost  string
 	ServerPort  uint64
+	EtcdAddress string
 }
 
 func NewBaseApp(p *BaseParam) BaseApp {
-	nacosParam := vo.NacosClientParam{
-		ServerConfigs: []constant.ServerConfig{
-			{
-				IpAddr: p.NacosAddr,
-				Port:   uint64(p.NacosPort),
-			},
-		},
-		ClientConfig: &constant.ClientConfig{
-			NamespaceId: p.NamespaceId,
-		},
-	}
-	nacosClient, err := nacos.GetNamingClientIOCInterface(&nacos.Param{NacosClientParam: nacosParam})
-	if err != nil {
-		panic(err)
-	}
-	configClient, err := config.GetConfigClientIOCInterface(&config.Param{NacosClientParam: nacosParam})
+	cli, err := clientv3.NewFromURL(p.EtcdAddress)
 	if err != nil {
 		panic(err)
 	}
 	return BaseApp{
-		NacosClient:  nacosClient,
-		ConfigClient: configClient,
-		ServiceName:  p.ServiceName,
-		ServerPort:   p.ServerPort,
+		AppName:     p.AppName,
+		ServiceName: p.ServiceName,
+		ServerPort:  p.ServerPort,
+		ServerHost:  p.ServerHost,
+		EtcdClient:  cli,
 	}
 }
 
 func (a *BaseApp) Register() {
-	_, err := a.NacosClient.RegisterInstance(vo.RegisterInstanceParam{
-		Ip:          util.GetNetworkIp(),
-		Port:        a.ServerPort,
-		ServiceName: a.ServiceName,
-	})
+	target := a.AppName + "/services/" + a.ServiceName
+	em, _ := endpoints.NewManager(a.EtcdClient, target)
+	addr := fmt.Sprintf("%s:%d", a.ServerHost, a.ServerPort)
+	key := target + "/" + strings.ReplaceAll(addr, ".", "-")
+	lease := clientv3.NewLease(a.EtcdClient)
+	leaseResp, _ := lease.Grant(context.TODO(), _ttl)
+	leaseRespChan, err := lease.KeepAlive(context.TODO(), leaseResp.ID)
 	if err != nil {
-		panic(err)
+		log.Panicf("续租失败:%s\n", err.Error())
 	}
+	err = em.AddEndpoint(context.TODO(), key, endpoints.Endpoint{Addr: addr}, clientv3.WithLease(leaseResp.ID))
+	if err != nil {
+		log.Panicln("etce add endpoint failed")
+	}
+	go func() {
+		for {
+			leaseKeepResp := <-leaseRespChan
+			if leaseKeepResp == nil {
+				fmt.Printf("已经关闭续租功能\n")
+				return
+			}
+		}
+	}()
 }
 
 func (a *BaseApp) Deregister() {
-	_, err := a.NacosClient.DeregisterInstance(vo.DeregisterInstanceParam{
-		Ip:          util.GetNetworkIp(),
-		Port:        a.ServerPort,
-		ServiceName: a.ServiceName,
-	})
-	if err != nil {
-		panic(err)
-	}
+	target := a.AppName + "/services/" + a.ServiceName
+	em, _ := endpoints.NewManager(a.EtcdClient, target)
+	addr := fmt.Sprintf("%s:%d", a.ServerHost, a.ServerPort)
+	key := target + "/" + strings.ReplaceAll(addr, ".", "-")
+	em.DeleteEndpoint(context.TODO(), key)
 }
